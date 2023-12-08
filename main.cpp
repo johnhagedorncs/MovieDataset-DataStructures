@@ -120,11 +120,8 @@ int main(int argc, char **argv) {
             }
         }
     }
-
     return 0;
 }
-
-
 
 /*
 Part 3a: Time Complexity (TC) Analysis: 
