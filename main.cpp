@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
 
     vector<Movie> bestMoviesByPrefix;
     set<string> usedPrefixes;
-    bool anyUnusedPrefixes = false;
 
     for (const string &prefix : prefixes) {
         vector<Movie> matchingMovies;
@@ -103,29 +102,28 @@ int main(int argc, char **argv) {
             bestMoviesByPrefix.push_back(*highestRated);
         } else {
             cout << "No movies found with prefix " << prefix << endl;
-            anyUnusedPrefixes = true;
         }
     }
 
-// Print best movie for each used prefix
-for (const string &prefix : prefixes) {
-    if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
-        auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
-            return movie.getName().find(prefix) == 0;
-        });
+    // Print best movie for each used prefix
+    for (const string &prefix : prefixes) {
+        if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
+            auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
+                return movie.getName().find(prefix) == 0;
+            });
 
-        if (it != bestMoviesByPrefix.end()) {
-            cout << "Best movie with prefix " << prefix << " is: " << it->getName()
-                 << " with rating " << fixed << setprecision(1) << it->getRating()
-                 << endl;
-        } else {
-            cout << "No movies found with prefix " << prefix << endl;
+            if (it != bestMoviesByPrefix.end()) {
+                cout << "Best movie with prefix " << prefix << " is: " << it->getName() << " with rating " << fixed << setprecision(1) << it->getRating();
+                cout << endl;
+            } else {
+                cout << "No movies found with prefix " << prefix << endl;
+            }
         }
     }
+
+    return 0;
 }
 
-return 0;
-}
 
 
 /*
