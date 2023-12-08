@@ -3,14 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <ctime>
 #include <vector>
-#include <cstring>
 #include <algorithm>
-#include <limits.h>
 #include <iomanip>
 #include <set>
-#include <queue>
 #include "movies.h"
 
 using namespace std;
@@ -76,7 +72,7 @@ int main(int argc, char **argv) {
 
     for (const string &prefix : prefixes) {
         vector<Movie> matchingMovies;
-        bool foundMovies = false; // Flag to check if any movies are found for the current prefix
+        bool foundMovies = false;
 
         for (const Movie &movie : movies) {
             if (movie.getName().find(prefix) == 0) {
@@ -86,14 +82,13 @@ int main(int argc, char **argv) {
         }
 
         if (foundMovies) {
-            usedPrefixes.insert(prefix); // Mark the prefix as used
+            usedPrefixes.insert(prefix);
 
-            // Sort movies by rating in descending order
             sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
                 if (a.getRating() == b.getRating()) {
-                    return a.getName() < b.getName(); // If ratings are equal, sort alphabetically
+                    return a.getName() < b.getName();
                 }
-                return a.getRating() > b.getRating(); // Otherwise, sort by rating in descending order
+                return a.getRating() > b.getRating();
             });
 
             for (const Movie &movie : matchingMovies) {
@@ -101,41 +96,35 @@ int main(int argc, char **argv) {
             }
             cout << endl;
 
-
             auto highestRated = max_element(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
                 return a.getRating() < b.getRating();
             });
 
             bestMoviesByPrefix.push_back(*highestRated);
-
         } else {
             cout << "No movies found with prefix " << prefix << endl;
             anyUnusedPrefixes = true;
         }
     }
 
-    // Print best movie for each used prefix
-    for (const string &prefix : prefixes) {
-        if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
-            auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
-                return movie.getName().find(prefix) == 0;
-            });
+// Print best movie for each used prefix
+for (const string &prefix : prefixes) {
+    if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
+        auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
+            return movie.getName().find(prefix) == 0;
+        });
 
-            if (it != bestMoviesByPrefix.end()) {
-                cout << "Best movie with prefix " << prefix << " is: " << it->getName()
-                     << " with rating " << fixed << setprecision(1) << it->getRating()
-                     << endl;
-            } else {
-                cout << "No movies found with prefix " << prefix << endl;
-            }
+        if (it != bestMoviesByPrefix.end()) {
+            cout << "Best movie with prefix " << prefix << " is: " << it->getName()
+                 << " with rating " << fixed << setprecision(1) << it->getRating()
+                 << endl;
+        } else {
+            cout << "No movies found with prefix " << prefix << endl;
         }
     }
+}
 
-    if (anyUnusedPrefixes) {
-        cout << endl;
-    }
-
-    return 0;
+return 0;
 }
 
 
