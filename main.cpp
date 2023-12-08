@@ -1,6 +1,5 @@
-// Spring'22
-// Instructor: Diba Mirza
-// Student name: 
+// main.cpp
+// Student name: John Hagedorn
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -12,44 +11,50 @@
 #include <iomanip>
 #include <set>
 #include <queue>
+#include "movies.h"
 using namespace std;
 
 bool parseLine(string &line, string &movieName, double &movieRating);
 
-int main(int argc, char** argv){
-    if (argc < 2){
+int main(int argc, char **argv) {
+
+    if (argc < 2) {
         cerr << "Not enough arguments provided (need at least 1 argument)." << endl;
-        cerr << "Usage: " << argv[ 0 ] << " moviesFilename prefixFilename " << endl;
+        cerr << "Usage: " << argv[0] << " moviesFilename prefixFilename " << endl;
         exit(1);
     }
 
-    ifstream movieFile (argv[1]);
- 
-    if (movieFile.fail()){
+    ifstream movieFile(argv[1]);
+
+    if (movieFile.fail()) {
         cerr << "Could not open file " << argv[1];
         exit(1);
     }
-  
-    // Create an object of a STL data-structure to store all the movies
+
+    vector<Movie> movies;
 
     string line, movieName;
     double movieRating;
-    // Read each file and store the name and rating
-    while (getline (movieFile, line) && parseLine(line, movieName, movieRating)){
-            // Use std::string movieName and double movieRating
-            // to construct your Movie objects
-            // cout << movieName << " has rating " << movieRating << endl;
-            // insert elements into your data structure
+
+    while (getline(movieFile, line) && parseLine(line, movieName, movieRating)) {
+        movies.emplace_back(movieName, movieRating);
     }
 
     movieFile.close();
 
-    if (argc == 2){
-            //print all the movies in ascending alphabetical order of movie names
-            return 0;
+    if (argc == 2) {
+        sort(movies.begin(), movies.end(), [](const Movie &a, const Movie &b) {
+            return a.getName() < b.getName();
+        });
+
+        for (const Movie &movie : movies) {
+            cout << movie.getName() << ", " << movie.getRating() << endl;
+        }
+
+        return 0;
     }
 
-    ifstream prefixFile (argv[2]);
+    ifstream prefixFile(argv[2]);
 
     if (prefixFile.fail()) {
         cerr << "Could not open file " << argv[2];
@@ -57,30 +62,143 @@ int main(int argc, char** argv){
     }
 
     vector<string> prefixes;
-    while (getline (prefixFile, line)) {
+    while (getline(prefixFile, line)) {
         if (!line.empty()) {
             prefixes.push_back(line);
         }
     }
 
-    //  For each prefix,
-    //  Find all movies that have that prefix and store them in an appropriate data structure
-    //  If no movie with that prefix exists print the following message
-    cout << "No movies found with prefix "<<"<replace with prefix>" << endl << endl;
+    prefixFile.close();
 
-    //  For each prefix,
-    //  Print the highest rated movie with that prefix if it exists.
-    cout << "Best movie with prefix " << "<replace with prefix>" << " is: " << "replace with movie name" << " with rating " << std::fixed << std::setprecision(1) << "replace with movie rating" << endl;
+    vector<Movie> bestMoviesByPrefix;
+    set<string> usedPrefixes;
+
+    for (const string &prefix : prefixes) {
+        vector<Movie> matchingMovies;
+        bool foundMovies = false; // Flag to check if any movies are found for the current prefix
+
+        for (const Movie &movie : movies) {
+            if (movie.getName().find(prefix) == 0) {
+                matchingMovies.push_back(movie);
+                foundMovies = true;
+            }
+        }
+
+        if (foundMovies) {
+            usedPrefixes.insert(prefix); // Mark the prefix as used
+
+            // Sort movies by rating in descending order
+            sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
+                if (a.getRating() == b.getRating()) {
+                    return a.getName() < b.getName(); // If ratings are equal, sort alphabetically
+                }
+                return a.getRating() > b.getRating(); // Otherwise, sort by rating in descending order
+            });
+
+            for (const Movie &movie : matchingMovies) {
+                cout << movie.getName() << ", " << movie.getRating() << endl;
+            }
+
+            auto highestRated = max_element(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
+                return a.getRating() < b.getRating();
+            });
+
+            bestMoviesByPrefix.push_back(*highestRated);
+
+            cout << endl; // Add line break between prefixes
+        }
+    }
+
+    // Print unused prefixes
+    bool anyUnusedPrefixes = false;
+    for (const string &prefix : prefixes) {
+    if (usedPrefixes.find(prefix) == usedPrefixes.end()) {
+        cout << "No movies found with prefix " << prefix << endl;
+        anyUnusedPrefixes = true;
+        }
+    }
+
+    // Print only one line break if there are no unused prefixes
+    if (anyUnusedPrefixes) {
+        cout << endl;
+    }
+
+    // Print best movie for each used prefix
+    for (const string &prefix : prefixes) {
+        if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
+            auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
+                return movie.getName().find(prefix) == 0;
+            });
+
+            if (it != bestMoviesByPrefix.end()) {
+                cout << "Best movie with prefix " << prefix << " is: " << it->getName()
+                    << " with rating " << fixed << setprecision(1) << it->getRating()
+                    << endl;
+            } else {
+                cout << "No movies found with prefix \"" << prefix << "\"" << endl;
+            }
+        }
+    }
 
     return 0;
 }
 
-/* Add your run time analysis for part 3 of the assignment here as commented block*/
+/*
+Part 3a: Time Complexity (TC) Analysis: 
+
+Iterating over Movies: loop reads movies, has TC of O(n), where n is num of movies
+Sorting Movies: sorting operation has TC of O(n log n), where n is num movies
+Finding Best Movie for Each Prefix: for each prefix, algorithm iterates over movies once,
+inner loop complexity is O(n) with m prefixes, so the TC is O(m * n).
+Printing Results: printing operation has TC O(m * k * l), where m is num of prefixes, 
+k is max num of movies per prefix, and l is the max length of movie name.
+
+The overall time complexity is O(m * n). 
+
+Running times for prefix_large.txt:
+input_20_random.csv: 350 ms
+input_100_random.csv: 596 ms
+input_1000_random.csv: 2,795 ms
+input_76920_random.csv: 208,551 ms
+
+
+Part 3b: space complexity
+
+Space Complexity Analysis:
+n: num of movies
+m: num of prefixes
+k: max num of movies with a prefix
+l: max num of characters in a movie name
+
+The space complexity of the algorithm is dominated by:
+movies vector: O(n * l) for storing names of all movies
+prefixes vector: O(m * l) for storing prefixes
+matchingMovies vector: O(k * l) for storing movies with a specific prefix
+bestMoviesByPrefix vector: O(m * l) for storing the best movie for each prefix
+usedPrefixes set: O(m * l) for storing used prefixes
+
+Therefore, the overall space complexity is O(n * l + m * l + k * l + m * l + m * l) = O((n + 3m + k) * l).
+Since k and l are constant factors in Big-O notation, the final space complexity is O((n + m) * l).
+
+
+Part 3c: tradeoffs between time/space complexity
+
+Tradeoff:
+The algorithm is designed to prioritize low time complexity by efficiently searching for movies with a specific prefix.
+The space complexity is affected by storing additional data structures like vectors and sets.
+
+Answers to Questions:
+I designed the algorithm for low time complexity, but space complexity was also considered.
+Achieving low space complexity was challenging due to the need to store certain prefixes and matching movies.
+While I tried my best to optimize space, my main focus was on optimizing time complexity.
+
+Overall, getting a low time complexity was prioritized over having low space complexity.
+*/
 
 bool parseLine(string &line, string &movieName, double &movieRating) {
-    int commaIndex = line.find_last_of(",");
+    size_t commaIndex = line.find_last_of(",");
     movieName = line.substr(0, commaIndex);
-    movieRating = stod(line.substr(commaIndex+1));
+    movieRating = stod(line.substr(commaIndex + 1));
     if (movieName[0] == '\"') {
         movieName = movieName.substr(1, movieName.length() - 2);
     }
