@@ -12,12 +12,12 @@
 #include <set>
 #include <queue>
 #include "movies.h"
+
 using namespace std;
 
 bool parseLine(string &line, string &movieName, double &movieRating);
 
 int main(int argc, char **argv) {
-
     if (argc < 2) {
         cerr << "Not enough arguments provided (need at least 1 argument)." << endl;
         cerr << "Usage: " << argv[0] << " moviesFilename prefixFilename " << endl;
@@ -72,6 +72,7 @@ int main(int argc, char **argv) {
 
     vector<Movie> bestMoviesByPrefix;
     set<string> usedPrefixes;
+    bool anyUnusedPrefixes = false;
 
     for (const string &prefix : prefixes) {
         vector<Movie> matchingMovies;
@@ -98,6 +99,8 @@ int main(int argc, char **argv) {
             for (const Movie &movie : matchingMovies) {
                 cout << movie.getName() << ", " << movie.getRating() << endl;
             }
+            cout << endl;
+
 
             auto highestRated = max_element(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
                 return a.getRating() < b.getRating();
@@ -105,22 +108,10 @@ int main(int argc, char **argv) {
 
             bestMoviesByPrefix.push_back(*highestRated);
 
-            cout << endl; // Add line break between prefixes
+        } else {
+            cout << "No movies found with prefix " << prefix << endl;
+            anyUnusedPrefixes = true;
         }
-    }
-
-    // Print unused prefixes
-    bool anyUnusedPrefixes = false;
-    for (const string &prefix : prefixes) {
-    if (usedPrefixes.find(prefix) == usedPrefixes.end()) {
-        cout << "No movies found with prefix " << prefix << endl;
-        anyUnusedPrefixes = true;
-        }
-    }
-
-    // Print only one line break if there are no unused prefixes
-    if (anyUnusedPrefixes) {
-        cout << endl;
     }
 
     // Print best movie for each used prefix
@@ -132,16 +123,21 @@ int main(int argc, char **argv) {
 
             if (it != bestMoviesByPrefix.end()) {
                 cout << "Best movie with prefix " << prefix << " is: " << it->getName()
-                    << " with rating " << fixed << setprecision(1) << it->getRating()
-                    << endl;
+                     << " with rating " << fixed << setprecision(1) << it->getRating()
+                     << endl;
             } else {
-                cout << "No movies found with prefix \"" << prefix << "\"" << endl;
+                cout << "No movies found with prefix " << prefix << endl;
             }
         }
     }
 
+    if (anyUnusedPrefixes) {
+        cout << endl;
+    }
+
     return 0;
 }
+
 
 /*
 Part 3a: Time Complexity (TC) Analysis: 
