@@ -85,7 +85,13 @@ int main(int argc, char **argv) {
 
             sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
                 if (a.getRating() == b.getRating()) {
-                    return a.getName() < b.getName();
+                    // Handle the case when movies have the same rating
+                    for (size_t i = 0; i < min(a.getName().size(), b.getName().size()); ++i) {
+                        if (a.getName()[i] != b.getName()[i]) {
+                            return a.getName()[i] < b.getName()[i];
+                        }
+                    }
+                    return a.getName().size() < b.getName().size();
                 }
                 return a.getRating() > b.getRating();
             });
@@ -122,6 +128,7 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
 
 /*
 Part 3a: Time Complexity (TC) Analysis: 
