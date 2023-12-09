@@ -1,5 +1,5 @@
 // main.cpp
-// Student name: John Hagedorn
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -39,14 +39,8 @@ int main(int argc, char **argv) {
     movieFile.close();
 
     if (argc == 2) {
-        sort(movies.begin(), movies.end(), [](const Movie &a, const Movie &b) {
-            return a.getName() < b.getName();
-        });
-
-        for (const Movie &movie : movies) {
-            cout << movie.getName() << ", " << movie.getRating() << endl;
-        }
-
+        movieStuff stuff;
+        stuff.printInAlph(movies);
         return 0;
     }
 
@@ -66,48 +60,54 @@ int main(int argc, char **argv) {
 
     prefixFile.close();
 
+    vector<Movie> sortedMovies = movies; // sort in alphabetical order
+    sort(sortedMovies.begin(), sortedMovies.end(), [](const Movie& a, const Movie& b) {
+        return a.getName() < b.getName();
+    });
+
     vector<Movie> bestMoviesByPrefix;
     set<string> usedPrefixes;
 
-    for (const string &prefix : prefixes) {
+    for (const string& prefix : prefixes) {
         vector<Movie> matchingMovies;
         bool foundMovies = false;
 
-        for (const Movie &movie : movies) {
-            if (movie.getName().find(prefix) == 0) {
-                matchingMovies.push_back(movie);
-                foundMovies = true;
-            }
+        auto startIt = lower_bound(sortedMovies.begin(), sortedMovies.end(), prefix, [](const Movie& movie, const string& prefix) {
+            return movie.getName() < prefix;
+        });
+
+        for (auto it = startIt; it != sortedMovies.end() && it->getName().compare(0, prefix.size(), prefix) == 0; ++it) {
+            matchingMovies.push_back(*it);
+            foundMovies = true;
         }
 
         if (foundMovies) {
             usedPrefixes.insert(prefix);
 
-            sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
-    if (a.getRating() == b.getRating()) {
-        string nameA = a.getName();
-        string nameB = b.getName();
-        int minLength = min(nameA.size(), nameB.size());
+            sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie& a, const Movie& b) {
+                if (a.getRating() == b.getRating()) {
+                    string nameA = a.getName();
+                    string nameB = b.getName();
+                    int minLength = min(nameA.size(), nameB.size());
 
-        for (int i = 0; i < minLength; ++i) {
-            if (nameA[i] != nameB[i]) {
-                return nameA[i] < nameB[i];
-            }
-        }
+                    for (int i = 0; i < minLength; ++i) {
+                        if (nameA[i] != nameB[i]) {
+                            return nameA[i] < nameB[i];
+                        }
+                    }
 
-        // If we reach here, one name is a prefix of the other, so the shorter one comes first
-        return nameA.size() < nameB.size();
-    }
+                    return nameA.size() < nameB.size();
+                }
 
-    return a.getRating() > b.getRating();
-});
+                return a.getRating() > b.getRating();
+            });
 
-            for (const Movie &movie : matchingMovies) {
+            for (const Movie& movie : matchingMovies) {
                 cout << movie.getName() << ", " << movie.getRating() << endl;
             }
             cout << endl;
 
-            auto highestRated = max_element(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
+            auto highestRated = max_element(matchingMovies.begin(), matchingMovies.end(), [](const Movie& a, const Movie& b) {
                 return a.getRating() < b.getRating();
             });
 
@@ -117,10 +117,9 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Print best movie for each used prefix
-    for (const string &prefix : prefixes) {
+    for (const string& prefix : prefixes) {
         if (usedPrefixes.find(prefix) != usedPrefixes.end()) {
-            auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie &movie) {
+            auto it = find_if(bestMoviesByPrefix.begin(), bestMoviesByPrefix.end(), [&prefix](const Movie& movie) {
                 return movie.getName().find(prefix) == 0;
             });
 
@@ -133,6 +132,7 @@ int main(int argc, char **argv) {
             }
         }
     }
+
     return 0;
 }
 
