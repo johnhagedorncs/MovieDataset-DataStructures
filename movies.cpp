@@ -14,6 +14,6 @@ void movieStuff::printInAlph(const vector<Movie>& movies) {
         return a.getName() < b.getName();
     });
     for (const Movie& movie : sortedMovies) {
-        cout << movie.getName() << ",  " << movie.getRating() << endl;
+        cout << movie.getName() << ", " << movie.getRating() << endl;
     }
 }
