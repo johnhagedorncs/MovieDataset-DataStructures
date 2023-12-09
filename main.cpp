@@ -84,11 +84,23 @@ int main(int argc, char **argv) {
             usedPrefixes.insert(prefix);
 
             sort(matchingMovies.begin(), matchingMovies.end(), [](const Movie &a, const Movie &b) {
-                if (a.getRating() == b.getRating()) {
-                    return a.getName() < b.getName(); // If ratings are equal, sort alphabetically
-                }
-                return a.getRating() > b.getRating(); // Otherwise, sort by rating in descending order
-            });
+    if (a.getRating() == b.getRating()) {
+        string nameA = a.getName();
+        string nameB = b.getName();
+        int minLength = min(nameA.size(), nameB.size());
+
+        for (int i = 0; i < minLength; ++i) {
+            if (nameA[i] != nameB[i]) {
+                return nameA[i] < nameB[i];
+            }
+        }
+
+        // If we reach here, one name is a prefix of the other, so the shorter one comes first
+        return nameA.size() < nameB.size();
+    }
+
+    return a.getRating() > b.getRating();
+});
 
             for (const Movie &movie : matchingMovies) {
                 cout << movie.getName() << ", " << movie.getRating() << endl;
