@@ -1,4 +1,5 @@
 // main.cpp
+// author: John Hagedorn
 
 #include <iostream>
 #include <fstream>
