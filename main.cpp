@@ -150,10 +150,10 @@ k is max num of movies per prefix, and l is the max length of movie name.
 The overall time complexity is O(m * n). 
 
 Running times for prefix_large.txt:
-input_20_random.csv: 350 ms
-input_100_random.csv: 596 ms
-input_1000_random.csv: 2,795 ms
-input_76920_random.csv: 208,551 ms
+input_20_random.csv: 0.25 s
+input_100_random.csv: 0.26 s
+input_1000_random.csv: 0.29 s
+input_76920_random.csv: 2.36 s
 
 
 Part 3b: space complexity
